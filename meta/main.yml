@@ -1,0 +1,25 @@
+---
+galaxy_info:
+  author: Dick Visser
+  description: Sr. System & Network Engineer
+  company: GÉANT
+  license: MIT
+  min_ansible_version: 1.2
+  platforms:
+  - name: Ubuntu
+    versions:
+    - trusty
+    - vivid
+    - wily
+    - xenial
+    - yakkety
+  - name: Debian
+    versions:
+    - jessie
+    - sid
+    - stretch
+  galaxy_tags:
+    - modmellon
+    - saml20
+    - saml
+    - sp

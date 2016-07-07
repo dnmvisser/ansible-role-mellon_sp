@@ -1,0 +1,5 @@
+---
+# defaults for mellon_sp
+mellon_sp_cfg_dir: "/etc/apache2/mellon"
+mellon_sp_crt_subject: "C=NL/ST=FL/L=Lelystad/O=University of Lelystad/CN={{ inventory_hostname }}"
+mellon_sp_idp_metadata_url: "https://idp.unilely.nl/saml2/idp/metadata.php"
