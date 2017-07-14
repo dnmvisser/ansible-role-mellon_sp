@@ -1,3 +1,4 @@
 ---
 # Tasks file for mellon_sp
 - include: mellon_sp.yml
+  tags: [mellon]

@@ -1,73 +1,36 @@
 ---
 # Tasks
-- name: Install apache2 mellon module
-  apt:
-    package=libapache2-mod-auth-mellon
-    state=present
-
-
-- name: Enable apache2 mellon module
-  apache2_module:
-    name: auth_mellon
-  notify: restart apache
+# TODO make this dependent on the apache role instead of installing the package
+- name: Ensure apache2 mellon module is installed
+  package:
+    name: libapache2-mod-auth-mellon
+    state: present
 
 
 - name: Ensure mellon config directory exists
-  file: path="{{ mellon_sp_cfg_dir }}"
-    state=directory
-    mode=0755
+  file:
+    path: "{{ mellon_sp_cfg_dir }}"
+    state: directory
+    mode: 0755
 
 
-- name: Check if this host has its own directory to store files
-  become: false
-  local_action: "stat path=files/{{ inventory_hostname}}"
-  register: stfiles
+- name: Ensure SAML key is available
+  copy:
+    content: "{{ mellon_sp_key }}"
+    dest: "{{ mellon_sp_cfg_dir }}/sp.key"
+    mode: 0640
+    group: "ssl-cert"
 
 
-- name: Create directory to store files
-  become: false
-  local_action: "file path=files/{{ inventory_hostname }} state=directory"
-  when: stfiles.stat.isdir is not defined
+- name: Ensure SAML cert is available
+  copy:
+    content: "{{ mellon_sp_crt }}"
+    dest: "{{ mellon_sp_cfg_dir }}/sp.crt"
 
 
-- name: Check if SAML key exists
-  become: false
-  local_action: "stat path=files/{{ inventory_hostname }}/mellon_sp.key"
-  register: stkey
-
-
-# FIXME This depends on a local openssl binary.
-# From 2.1 on you can encrypt the private key locally:
-# 'ansible-vault encrypt files/{{ inventory_hostname }}/mellon_sp.key'
-- name: Create self-signed SAML cert
-  become: false
-  local_action: "command openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -keyout files/{{ inventory_hostname }}/mellon_sp.key -out files/{{ inventory_hostname }}/mellon_sp.crt -subj '/{{ mellon_sp_crt_subject }}/'"
-  args:
-  when: stkey.stat.isreg is not defined
-
-
-  # FIXME this is less important after it's been encrypted
-- name: Restrict permissions on local SAML key
-  become: false
-  local_action: file
-    path=files/{{ inventory_hostname }}/mellon_sp.key
-    mode=0400
-
-
-- name: Copy SAML key
-  # This can be a encrypted file since 2.1.
-  # In which case you'd need to issue "--ask-vault-pass" when running the playbook.
-  copy: src="files/{{ inventory_hostname }}/mellon_sp.key"
-    dest="{{ mellon_sp_cfg_dir }}/sp.key"
-    mode=0400
-
-
-- name: Copy SAML certificate
-  copy: src="files/{{ inventory_hostname }}/mellon_sp.crt"
-    dest="{{ mellon_sp_cfg_dir }}/sp.crt"
-
-
-- name: Fetch IdP metadata from "{{ mellon_sp_idp_metadata_url }}"
+- name: Fetch IdP metadata from "{{ mellon_sp_remote_idp_metadata_url }}"
   get_url:
-    url: "{{ mellon_sp_idp_metadata_url }}"
+    url: "{{ mellon_sp_remote_idp_metadata_url }}"
     dest: "{{ mellon_sp_cfg_dir }}/idp.xml"
+    force: yes
+  tags: idpmeta
