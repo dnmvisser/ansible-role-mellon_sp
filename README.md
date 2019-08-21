@@ -30,9 +30,10 @@ Role Variables
 The directory where the keypair and IdP metdata is stored.
 
 
-    mellon_sp_remote_idp_metadata_url: "https://idp.unilely.nl/saml2/idp/metadata.php"
+    mellon_sp_remote_idp_metadata_url:
+      - "https://idp.unilely.nl/saml2/idp/metadata.php"
 
-The URL from where to fetch the IdP metadata. 
+A list of URLs from where to fetch the IdP metadata. 
 
 
 Dependencies
