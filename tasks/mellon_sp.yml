@@ -27,13 +27,29 @@
     content: "{{ mellon_sp_crt }}"
     dest: "{{ mellon_sp_cfg_dir }}/sp.crt"
 
-- name: Fetch IdP metadata
+
+- name: Change IdP metadata string to list
+  set_fact:
+    mellon_sp_remote_idp_metadata_url:
+      - "{{ mellon_sp_remote_idp_metadata_url }}"
+  when: mellon_sp_remote_idp_metadata_url is string
+  tags: idpmeta
+
+- name: Fetch IdP metadata from one source
+  get_url:
+    url: "{{ mellon_sp_remote_idp_metadata_url[0] }}"
+    dest: "{{ mellon_sp_cfg_dir }}/idp.xml"
+    force: yes
+  when: mellon_sp_remote_idp_metadata_url | length == 1
+  tags: idpmeta
+
+- name: Fetch IdP metadata from multiple sources
   get_url:
     url: "{{ item }}"
-    dest: "{{ mellon_sp_cfg_dir }}/idp{{ (mellon_sp_remote_idp_metadata_url is string) | ternary('', '_' ~ idx) }}.xml"
+    dest: "{{ mellon_sp_cfg_dir }}/idp_{{ idx }}.xml"
     force: yes
-  # https://jmespath.org/specification.html#to-array
-  loop: "{{ mellon_sp_remote_idp_metadata_url | json_query('to_array(@)') }}"
+  loop: "{{ mellon_sp_remote_idp_metadata_url }}"
   loop_control:
     index_var: idx
+  when: mellon_sp_remote_idp_metadata_url | length > 1
   tags: idpmeta
