@@ -35,5 +35,6 @@
   # https://jmespath.org/specification.html#to-array
   loop: "{{ mellon_sp_remote_idp_metadata_url | json_query('to_array(@)') }}"
   loop_control:
+    label: "{{ item }} => {{ mellon_sp_cfg_dir }}/idp{{ (mellon_sp_remote_idp_metadata_url is string) | ternary('', '_' ~ idx) }}.xml"
     index_var: idx
   tags: idpmeta
